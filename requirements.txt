@@ -1,0 +1,8 @@
+pytz==2022.1
+tzlocal==5.0.1
+skyfield==1.46
+matplotlib==3.5.3
+jupyterlab==3.4.4
+astropy==5.1
+astroquery==0.4.6
+barycorrpy==0.4.4
