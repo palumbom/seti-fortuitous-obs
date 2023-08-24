@@ -38,8 +38,7 @@ beamDict = dict(zip(beamLabel, beamdeg))
 freqDict = dict(zip(beamLabel, upp))
 
 # distances along focal line
-# dists = [*range(550,1000,50), *range(1000,27600, 500)] * u.au
-dists = np.linspace(600, 27600, 11) * u.AU
+dists = [*range(550,1000,50), *range(1000,27600, 500)] * u.au
 
 # timezone stuff
 utcTZ = timezone("UTC")
