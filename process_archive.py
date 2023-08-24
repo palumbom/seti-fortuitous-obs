@@ -411,15 +411,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-# # Given string
-# string_data = '[173.34744027 173.355064   173.36151421 ... 173.43705651 173.43709127]'
-
-# # Remove the brackets and line breaks, then split the string into individual values
-# cleaned_data = string_data.strip('[]\n').split()
-
-# # Convert the cleaned string values to floats and create a NumPy array
-# numpy_array = np.array([float(value) for value in cleaned_data])
-
-# print(numpy_array)
