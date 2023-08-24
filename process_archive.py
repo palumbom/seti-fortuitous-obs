@@ -5,6 +5,7 @@ import os, sys, pdb, pytz
 import matplotlib.pyplot as plt
 
 from pytz import timezone
+from IPython import embed
 from tzlocal import get_localzone
 from datetime import datetime, timedelta
 from astroquery.gaia import Gaia
@@ -37,7 +38,8 @@ beamDict = dict(zip(beamLabel, beamdeg))
 freqDict = dict(zip(beamLabel, upp))
 
 # distances along focal line
-dists = [*range(550,1000,50), *range(1000,27600, 500)] * u.au
+# dists = [*range(550,1000,50), *range(1000,27600, 500)] * u.au
+dists = np.linspace(600, 27600, 11) * u.AU
 
 # timezone stuff
 utcTZ = timezone("UTC")
@@ -216,7 +218,7 @@ def star_from_gaia(gaia_row):
                         ra_mas_per_year=gaia_row["pmra"],
                         dec_mas_per_year=gaia_row["pmdec"],
                         parallax_mas=gaia_row["parallax"],
-                        radial_km_per_s=-gaia_row["radial_velocity"],
+                        radial_km_per_s=gaia_row["radial_velocity"],
                         epoch=gaia_epoch)
     return the_star
 
@@ -256,6 +258,17 @@ def get_drift_for_probe(ra_obs, dec_obs, obstime, band):
     idx = np.argmax(np.abs(drate))
     maxdrift = drate[idx]
     return maxdrift
+
+def format_dec_string(coord):
+    fs = 1
+    if coord < 0:
+        fs = -1
+        coord = abs(coord)
+    qS = '"'
+    return f"{int(fs*float(int(coord)))}$^\circ$ {int((coord - float(int(coord))) // (1/60))}' {np.around((coord - float(int(coord)) - ((coord - float(int(coord))) // (1/60))*(1/60))/(1/(60*60)),3)}{qS} "
+
+def format_ra_string(coord):
+    return f"{int(coord // 15)}h {int((coord - (coord // 15)*15) // 0.25)}m {np.around((coord - (coord // 15)*15 - ((coord - (coord // 15)*15) // 0.25)*0.25)/(360/(24*60*60)),3)}s"
 
 
 def main():
