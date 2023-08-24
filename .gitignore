@@ -1,3 +1,5 @@
 *.csv
 *.bsp
+*.tex
+*.ecsv
 *.ipynb_checkpoints

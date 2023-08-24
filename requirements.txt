@@ -6,3 +6,4 @@ jupyterlab==3.4.4
 astropy==5.1
 astroquery==0.4.6
 barycorrpy==0.4.4
+pandas==2.0.3
