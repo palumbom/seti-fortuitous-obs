@@ -9,11 +9,11 @@
 #SBATCH --chdir=/storage/home/mlp95/work/seti-fortuitous-obs
 #SBATCH --output=/storage/home/mlp95/work/logs/seti_overlap.%j.out
 
-echo "Starting job $PBS_JOBNAME"
+echo "About to start: $SLURM_JOB_NAME"
 date
-echo "Job id: $PBS_JOBID"
-echo "About to change into $PBS_O_WORKDIR"
-cd $PBS_O_WORKDIR
+echo "Job id: $SLURM_JOBID"
+echo "About to change into $SLURM_SUBMIT_DIR"
+cd $SLURM_SUBMIT_DIR
 echo "About to start Python"
 source /storage/group/ebf11/default/software/anaconda3/bin/activate
 conda activate seti
