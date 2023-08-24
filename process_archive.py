@@ -258,18 +258,6 @@ def get_drift_for_probe(ra_obs, dec_obs, obstime, band):
     maxdrift = drate[idx]
     return maxdrift
 
-def format_dec_string(coord):
-    fs = 1
-    if coord < 0:
-        fs = -1
-        coord = abs(coord)
-    qS = '"'
-    return f"{int(fs*float(int(coord)))}$^\circ$ {int((coord - float(int(coord))) // (1/60))}' {np.around((coord - float(int(coord)) - ((coord - float(int(coord))) // (1/60))*(1/60))/(1/(60*60)),3)}{qS} "
-
-def format_ra_string(coord):
-    return f"{int(coord // 15)}h {int((coord - (coord // 15)*15) // 0.25)}m {np.around((coord - (coord // 15)*15 - ((coord - (coord // 15)*15) // 0.25)*0.25)/(360/(24*60*60)),3)}s"
-
-
 def main():
     # set output filename
     filename = datdir + "fortuitous.csv"
