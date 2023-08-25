@@ -3,3 +3,4 @@
 *.tex
 *.ecsv
 *.ipynb_checkpoints
+debug.py
