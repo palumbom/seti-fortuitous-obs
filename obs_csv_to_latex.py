@@ -60,12 +60,12 @@ for i in range(np.max([10, len(df_new)])):
                     df_temp.loc[i, c] = df_temp.loc[i, c][k[i]]
                 else:
                     df_temp.loc[i, c] = " "
+    if i == 0:
+        df_new = pd.concat([df_temp, df_new], ignore_index=True)
+    else:
+        df_new = pd.concat([df_new, df_temp], ignore_index=True)
 
-    df_new = pd.concat([df_temp, df_new], ignore_index=True)
-
-# fix data types
-# df_new = df_new.astype({"gaia_source_id": "int32", "btl_index": "int32"}).dtypes
-
+# get columns to write and write it
 cols_to_write = ["gaia_source_id", "btl_index", "target", "ra_obs",
                  "dec_obs", "obs_band", "ra_trans",
                  "dec_trans", "maxdrift_trans"]
