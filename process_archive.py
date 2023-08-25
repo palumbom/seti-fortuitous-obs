@@ -44,6 +44,11 @@ dists = [*range(550,1000,50), *range(1000,27600, 500)] * u.au
 utcTZ = timezone("UTC")
 ts = load.timescale()
 
+# other globals
+c_cms = 2.99792458e10 * u.cm / u.s
+d = 4.132e18
+catt = d/2.99792458e10
+
 # set load directory
 load = Loader(datdir)
 
@@ -51,8 +56,6 @@ load = Loader(datdir)
 planets = load("de421.bsp")
 sun = planets["sun"]
 earth = planets["earth"]
-d = 4.132e18
-catt = d/2.99792458e10
 
 # calc antipode of observation, assuming probe at 550 AU and star at 25pc
 def calc_obs_antipode(ra_obs, dec_obs, obstime, probe_dist=550 * u.au):
@@ -85,64 +88,96 @@ def calc_obs_antipode(ra_obs, dec_obs, obstime, probe_dist=550 * u.au):
     dec_out = starDir[1]._degrees * u.deg
     return ra_out, dec_out
 
-def calc_transmitter_pos(the_star, obstime, probe_dist):
-    # distance in AU of probe
-    z = probe_dist
-
+def calc_probe_pos(ra_rec, dec_rec, ra_trans, dec_trans, the_star, obstime, probe_dists):
     # get time of observation
     dt = obstime.datetime.replace(tzinfo=utcTZ)
-
-    # compute ltt and retarded times
-    c_cms = 2.99792458e10 * u.cm / u.s
-    ltt = (z.to(u.cm))/c_cms #light travel time, seconds
     t = ts.from_datetime(dt)
-    t_r = ts.from_datetime(dt - timedelta(seconds=ltt.value))
-    t_rr = ts.from_datetime(dt - 2*timedelta(seconds=ltt.value))
-    t_trans = ts.from_datetime(dt + 2*timedelta(seconds=catt) - 2*timedelta(seconds=ltt.value))
 
-    # get vectors for probe
+    # get position of sun and earth at time of obs
     S = sun.at(t)
     E = earth.at(t)
-    x_ac = sun.at(t_trans).observe(the_star) - sun.at(t_trans)
-    xvec = x_ac.position
-    x = xvec.au/xvec.length().au
-    P = S - ICRF(z.value*x)
 
-    # get probe pos observed from Earth
-    PE = P-E
-    PE_dir = PE.radec()
-    ra_out = PE_dir[0]._degrees * u.deg
-    dec_out = PE_dir[1]._degrees * u.deg
-    return ra_out, dec_out
+    # loop over dists
+    for (i, z) in enumerate(probe_dists):
+        # get light travel time
+        ltt = (z.to(u.cm))/c_cms
 
-def calc_receiver_pos(the_star, obstime, probe_dist):
-    # distance in AU of probe
-    z = probe_dist
+        # get times
+        t_r = ts.from_datetime(dt - timedelta(seconds=ltt.value))
+        t_rr = ts.from_datetime(dt - 2.0 * timedelta(seconds=ltt.value))
+        t_trans = ts.from_datetime(dt + 2.0 * timedelta(seconds=catt) - 2.0 * timedelta(seconds=ltt.value))
 
-    # get time of observation
-    dt = obstime.datetime.replace(tzinfo=utcTZ)
+        # get position vectors for receiver
+        x_ac = sun.at(t_rr).observe(the_star) - sun.at(t_rr)
+        xvec = x_ac.position
+        x = xvec.au/xvec.length().au
+        P = S - ICRF(z.value*x)
 
-    # compute ltt and retarded times
-    c_cms = 2.99792458e10 * u.cm / u.s
-    ltt = (z.to(u.cm))/c_cms #light travel time, seconds
-    t = ts.from_datetime(dt)
-    t_r = ts.from_datetime(dt - timedelta(seconds=ltt.value))
-    t_rr = ts.from_datetime(dt - 2*timedelta(seconds=ltt.value))
+        # get probe pos observed from Earth
+        PE = P-E
+        PE_dir = PE.radec()
+        ra_rec_i = PE_dir[0]._degrees
+        dec_rec_i = PE_dir[1]._degrees
 
-    # get vectors for probe
-    S = sun.at(t)
-    E = earth.at(t)
-    x_ac = sun.at(t_rr).observe(the_star) - sun.at(t_rr)
-    xvec = x_ac.position
-    x = xvec.au/xvec.length().au
-    P = S - ICRF(z.value*x)
+        # get position vectors for transmitter
+        S = sun.at(t)
+        E = earth.at(t)
+        x_ac = sun.at(t_trans).observe(the_star) - sun.at(t_trans)
+        xvec = x_ac.position
+        x = xvec.au/xvec.length().au
+        P = S - ICRF(z.value*x)
 
-    # get probe pos observed from Earth
-    PE = P-E
-    PE_dir = PE.radec()
-    ra_out = PE_dir[0]._degrees * u.deg
-    dec_out = PE_dir[1]._degrees * u.deg
-    return ra_out, dec_out
+        # get probe pos observed from Earth
+        PE = P-E
+        PE_dir = PE.radec()
+        ra_trans_i = PE_dir[0]._degrees
+        dec_trans_i = PE_dir[1]._degrees
+
+        # assign to memory
+        ra_rec[i] = ra_rec_i
+        dec_rec[i] = dec_rec_i
+        ra_trans[i] = ra_trans_i
+        dec_trans[i] = dec_trans_i
+
+    return None
+
+def get_drift_for_probe(max_drift, c_probe, obstime, band):
+    # get the time of obs + make array 15 min into future
+    jdate = obstime.jd
+    JDUTC = np.linspace(jdate, jdate + (60.0 * 15.0/86400.), num=100)
+    dt = np.diff(JDUTC) * 86400.0
+
+    # get the frequency of the band
+    upp_freq = freqDict[band]
+
+    # get the pointing of the obs
+    for i in range(len(c_probe)):
+        c = c_probe[i]
+        s = c.to_string('decimal')
+        ra_probe, dec_probe = [float(string) for string in s.split()]
+
+        # other needed params
+        obsname = 'GBT'
+        epoch = 2451545.0
+        rv = 0.0
+        zmeas = 0.0
+        ephemeris='https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp'
+
+        # get the BC vel
+        baryvel = get_BC_vel(JDUTC=JDUTC, ra=ra_probe, dec=dec_probe, obsname="GBT",
+                             rv=rv, zmeas=zmeas, epoch=epoch, ephemeris=ephemeris,
+                             leap_update=True)
+
+        # take the derivative of velocity to get acceleration (i.e., drift)
+        dv = np.diff(baryvel[0])
+        dv_dt = dv/dt
+
+        # calculate the drift rate
+        drate = dv/dt * upp_freq * 1e9 / 3e8
+        idx = np.argmax(np.abs(drate))
+        max_drift[i] = drate[idx]
+
+    return None
 
 def get_gaia_stars(max_dist=(100.0 * u.pc)):
     # construct the query
@@ -220,43 +255,6 @@ def star_from_gaia(gaia_row):
                         radial_km_per_s=gaia_row["radial_velocity"],
                         epoch=gaia_epoch)
     return the_star
-
-def get_drift_for_probe(ra_obs, dec_obs, obstime, band):
-    # get the time of obs + make array 15 min into future
-    # jdate = obs.header['tstart'] + 2400000.5
-    jdate = obstime.jd
-    JDUTC = np.linspace(jdate, jdate + (60.0 * 15.0/86400.), num=100)
-
-    # get the pointing of the obs
-    c = SkyCoord(ra_obs, dec_obs)
-    s = c.to_string('decimal')
-    ra_probe, dec_probe = [float(string) for string in s.split()]
-
-    # other needed params
-    obsname = 'GBT'
-    epoch = 2451545.0
-    rv = 0.0
-    zmeas = 0.0
-    ephemeris='https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/planets/a_old_versions/de405.bsp'
-
-    # get the BC vel
-    baryvel = get_BC_vel(JDUTC=JDUTC, ra=ra_probe, dec=dec_probe, obsname="GBT",
-                         rv=rv, zmeas=zmeas, epoch=epoch, ephemeris=ephemeris,
-                         leap_update=True)
-
-    # take the derivative of velocity to get acceleration (i.e., drift)
-    dt = np.diff(JDUTC) * 86400.0
-    dv = np.diff(baryvel[0])
-    dv_dt = dv/dt
-
-    # get the correct band
-    upp_freq = freqDict[band]
-
-    # calculate the drift rate
-    drate = dv/dt * upp_freq * 1e9 / 3e8
-    idx = np.argmax(np.abs(drate))
-    maxdrift = drate[idx]
-    return maxdrift
 
 def main():
     # set output filename
@@ -337,48 +335,28 @@ def main():
             # create star object
             gaia_star = star_from_gaia(close_stars[j])
 
-            # loop over distances on focal line
-            for k in range(len(dists)):
-                # get transmitter coordinates
-                ra_trans_k, dec_trans_k = calc_transmitter_pos(gaia_star, obstime, dists[k])
-                c_trans_k = SkyCoord(ra_trans_k, dec_trans_k)
+            # get probe coordinates
+            calc_probe_pos(ra_rec, dec_rec, ra_trans, dec_trans, gaia_star, obstime, dists)
 
-                # calculate the seperation
-                sep_trans_k = c_obs.separation(c_trans_k).value
+            # calculate the seperation
+            c_rec = SkyCoord(ra_rec * u.deg, dec_rec * u.deg)
+            c_trans = SkyCoord(ra_trans * u.deg, dec_trans * u.deg)
+            sep_rec[:] = c_obs.separation(c_rec).value
+            sep_trans[:] = c_obs.separation(c_trans).value
 
-                # get the drift rate
-                drate_trans_k = get_drift_for_probe(ra_trans_k, dec_trans_k, obstime, band)
+            # determine if any part of the focal lines falls in beam
+            ang_dist_tol = 0.5 * beamDict[band]
+            rec_bool = any(sep_rec <= ang_dist_tol)
+            trans_bool = any(sep_trans <= ang_dist_tol)
 
-                # copy to array
-                ra_trans[k] = ra_trans_k.value
-                dec_trans[k] = dec_trans_k.value
-                sep_trans[k] = sep_trans_k
-                maxdrift_trans[k] = drate_trans_k
+            # move on if probe not in beam
+            if not (rec_bool | trans_bool):
+                continue
+            else:
+                # calculate drift rates
+                get_drift_for_probe(maxdrift_rec, c_rec, obstime, band)
+                get_drift_for_probe(maxdrift_trans, c_trans, obstime, band)
 
-                # get receiver coordinate
-                ra_rec_k, dec_rec_k = calc_receiver_pos(gaia_star, obstime, dists[k])
-                c_rec_k = SkyCoord(ra_rec_k, dec_rec_k)
-
-                # calculate the sepeartion
-                sep_rec_k = c_obs.separation(c_rec_k).value
-
-                # get the drift rate
-                drate_rec_k = get_drift_for_probe(ra_rec_k, dec_rec_k, obstime, band)
-
-                # copy to array
-                ra_rec[k] = ra_rec_k.value
-                dec_rec[k] = dec_rec_k.value
-                sep_rec[k] = sep_rec_k
-                maxdrift_rec[k] = drate_rec_k
-
-            # set angular distance tolerance
-            ang_dist_tol = 1.0 * beamDict[band]
-
-            # get ang distance conditions
-            ang_dist_cond = (any(sep_rec <= ang_dist_tol) | any(sep_trans <= ang_dist_tol))
-
-            # decide whether to write out row
-            if ang_dist_cond:
                 # make data row
                 row = {"gaia_source_id":close_stars[j]["source_id"],
                        "gaia_dist":close_stars[j]["distance_gspphot"],
