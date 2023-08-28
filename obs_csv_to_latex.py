@@ -44,7 +44,7 @@ df = df.drop_duplicates("gaia_source_id")
 df_new = pd.DataFrame(columns=df.columns)
 
 # subset the rows and columns to write
-for i in range(np.max([10, len(df_new)])):
+for i in range(np.max([15, len(df_new)])):
     # do intense table surgery
     num_rows = 2
     k = [0, len(dists)-1]
