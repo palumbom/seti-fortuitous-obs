@@ -3,4 +3,5 @@
 *.tex
 *.ecsv
 *.ipynb_checkpoints
+*.DS_Store
 debug.py
