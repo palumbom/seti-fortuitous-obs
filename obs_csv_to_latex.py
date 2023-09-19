@@ -101,8 +101,6 @@ for i in range(len(df)):
     else:
         df_new = pd.concat([df_new, df_temp], ignore_index=True)
 
-pdb.set_trace()
-
 # get it as an astropy table
 t1 = Table.from_pandas(df_new)
 t2 = Table(t1, masked=True)
@@ -184,8 +182,6 @@ t2["sep_rec"].unit = u.deg
 t2["maxdrift_rec"].unit = u.Hz / u.s
 t2["probe_dist"].unit = u.AU
 
-t2 = t2[0:63]
-
 # add to tablemaker
 tablemaker = cdspyreadme.CDSTablesMaker()
 
@@ -194,6 +190,7 @@ tablemaker.title = "Fortuitous Observations"
 tablemaker.author = 'M.L. Palumbo'
 tablemaker.authors = 'J.T. Wright, M.H. Huston'
 tablemaker.date = "2023"
+tablemaker.table = "Breakthrough Listen GBT Observations that fortuitously fall near stellar antipodes"
 
 # add the data
 table = tablemaker.addTable(t2, name="tab1.txt")
@@ -222,6 +219,9 @@ column.description="Dec in ICRS of the Breakthrough Listen observation"
 
 column = table.get_column("obs_time")
 column.description="ISO 8601 compliant date format of Breakthrough Listen observation; timezone is UTC"
+
+column = table.get_column("obs_band")
+column.description="Band of the GBT observation"
 
 column = table.get_column("ra_trans")
 column.description="List of RAs along transmitting probe focal line in ICRS"
@@ -252,5 +252,3 @@ column.description="List of probe distances that coordinates and drift rates wer
 
 # write it out
 tablemaker.toMRT()
-
-tablemaker.makeReadMe()

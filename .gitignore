@@ -1,6 +1,7 @@
 *.csv
 *.bsp
 *.tex
+*.txt
 *.mrt
 *.ecsv
 *.ipynb_checkpoints
