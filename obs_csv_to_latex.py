@@ -186,11 +186,10 @@ t2["probe_dist"].unit = u.AU
 tablemaker = cdspyreadme.CDSTablesMaker()
 
 # set the readme
-tablemaker.title = "Fortuitous Observations"
+tablemaker.title = "Fortuitous Observations of Potential Stellar Relay Probe Positions with GBT"
 tablemaker.author = 'M.L. Palumbo'
 tablemaker.authors = 'J.T. Wright, M.H. Huston'
 tablemaker.date = "2023"
-tablemaker.table = "Breakthrough Listen GBT Observations that fortuitously fall near stellar antipodes"
 
 # add the data
 table = tablemaker.addTable(t2, name="tab1.txt")
