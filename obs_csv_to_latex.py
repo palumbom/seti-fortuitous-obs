@@ -202,7 +202,7 @@ column = table.get_column("gaia_dist")
 column.description="Gaia gspphot distance"
 
 column = table.get_column("btl_index")
-column.description="Data index for Breakthrough Listen observation"
+column.description="Databse index of Breakthrough Listen observation"
 
 column = table.get_column("target")
 column.description="Target of Breakthrough Listen observation"
@@ -251,3 +251,8 @@ column.description="List of probe distances that coordinates and drift rates wer
 
 # write it out
 tablemaker.toMRT()
+
+# pdb.set_trace()
+
+# from astropy.io import ascii
+# data = ascii.read("tab1.txt", format="mrt")
