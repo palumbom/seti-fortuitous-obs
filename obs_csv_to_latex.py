@@ -232,7 +232,7 @@ column = table.get_column("sep_trans")
 column.description="List of angular separations of transmitting probes from observation pointing"
 
 column = table.get_column("maxdrift_trans")
-column.description="List of maximum drift rates of transmitting probes"
+column.description="List of drift rates of transmitting probes"
 
 column = table.get_column("ra_rec")
 column.description="List of RAs along receiving probe focal line in ICRS"
@@ -244,7 +244,7 @@ column = table.get_column("sep_rec")
 column.description="List of angular separations of receiving probes from observation pointing"
 
 column = table.get_column("maxdrift_rec")
-column.description="List of maximum drift rates of receiving probes"
+column.description="List of drift rates of receiving probes"
 
 column = table.get_column("probe_dist")
 column.description="List of probe distances that coordinates and drift rates were calculated for"
