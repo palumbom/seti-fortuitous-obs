@@ -87,15 +87,8 @@ for i in range(len(df)):
     df_temp = pd.concat([df.iloc[i:i+1, :]]*num_rows, ignore_index=True)
     cols_to_alter = ["ra_trans", "dec_trans", "sep_trans", "maxdrift_trans", "ra_rec", "dec_rec", "sep_rec", "maxdrift_rec"]
     for i in range(len(df_temp)):
-        if i == 0:
-            for c in cols_to_alter:
-                df_temp.loc[i, c] = df_temp.loc[i, c][k[i]]
-        else:
-            for c in df_temp.columns:
-                if c in cols_to_alter:
-                    df_temp.loc[i, c] = df_temp.loc[i, c][k[i]]
-                else:
-                    df_temp.loc[i, c] = " "
+        for c in cols_to_alter:
+            df_temp.loc[i, c] = df_temp.loc[i, c][k[i]]
     if i == 0:
         df_new = pd.concat([df_temp, df_new], ignore_index=True)
     else:
@@ -103,150 +96,114 @@ for i in range(len(df)):
 
 # get it as an astropy table
 t1 = Table.from_pandas(df_new)
-t2 = Table(t1, masked=True)
-
-# set the masking
-mask_idx = np.full(len(t1), True)
-mask_idx[0:len(t1)-1:len(dists)] = False
+t2 = Table()
 
 # change dataypes
-t2["gaia_source_id"][mask_idx] = 0
-t2["gaia_source_id"].fill_value = 0
-t2["gaia_source_id"] = t2["gaia_source_id"].astype('i8')
-t2["gaia_source_id"].mask = mask_idx
-
-t2["gaia_dist"][mask_idx] = 0
-t2["gaia_dist"].fill_value = 0
-t2["gaia_dist"] = t2["gaia_dist"].astype('f8')
-t2["gaia_dist"].mask = mask_idx
-
-t2["btl_index"][mask_idx] = 0
-t2["btl_index"].fill_value = 0
-t2["btl_index"] = t2["btl_index"].astype('i8')
-t2["btl_index"].mask = mask_idx
-
-t2["ra_obs"][mask_idx] = 0
-t2["ra_obs"].fill_value = 0
-t2["ra_obs"] = t2["ra_obs"].astype('f8')
-t2["ra_obs"].mask = mask_idx
-
-t2["dec_obs"][mask_idx] = 0
-t2["dec_obs"].fill_value = 0
-t2["dec_obs"] = t2["dec_obs"].astype('f8')
-t2["dec_obs"].mask = mask_idx
-
-t2["ra_trans"].fill_value = 0
-t2["ra_trans"] = t2["ra_trans"].astype('f8')
-
-t2["dec_trans"].fill_value = 0
-t2["dec_trans"] = t2["dec_trans"].astype('f8')
-
-t2["sep_trans"].fill_value = 0
-t2["sep_trans"] = t2["sep_trans"].astype('f8')
-
-t2["maxdrift_trans"].fill_value = 0
-t2["maxdrift_trans"] = t2["maxdrift_trans"].astype('f8')
-
-t2["ra_rec"].fill_value = 0
-t2["ra_rec"] = t2["ra_rec"].astype('f8')
-
-t2["dec_rec"].fill_value = 0
-t2["dec_rec"] = t2["dec_rec"].astype('f8')
-
-t2["sep_rec"].fill_value = 0
-t2["sep_rec"] = t2["sep_rec"].astype('f8')
-
-t2["maxdrift_rec"].fill_value = 0
-t2["maxdrift_rec"] = t2["maxdrift_rec"].astype('f8')
-
-# make probe dist column
-t2["probe_dist"] = np.repeat(dists.value, int(len(t2)/len(dists)))
+t2["Gaia"] = t1["gaia_source_id"].astype('i8')
+t2["Distance"] = t1["gaia_dist"].astype('f8')
+t2["BTLIndex"] = t1["btl_index"].astype('i8')
+t2["Target"] = t1["target"]
+t2["url"] = t1["url"]
+t2["RAObs"] = t1["ra_obs"].astype('f8')
+t2["DEObs"] = t1["dec_obs"].astype('f8')
+t2["ObsTime"] = t1["obs_time"]
+t2["ObsBand"] = t1["obs_band"]
+t2["RATrans"] = t1["ra_trans"].astype('f8')
+t2["DETrans"] = t1["dec_trans"].astype('f8')
+t2["SepTrans"] = t1["sep_trans"].astype('f8')
+t2["MaxDriftTr"] = t1["maxdrift_trans"].astype('f8')
+t2["RARec"] = t1["ra_rec"].astype('f8')
+t2["DERec"] = t1["dec_rec"].astype('f8')
+t2["SepRec"] = t1["sep_rec"].astype('f8')
+t2["MaxDriftRec"] = t1["maxdrift_rec"].astype('f8')
+t2["ProbeDist"] = np.tile(dists.value, int(len(t2)/len(dists)))
 
 # set units
-t2["gaia_source_id"].unit = None
-t2["gaia_dist"].unit = u.pc
-t2["btl_index"].unit = None
-t2["target"].unit = None
+t2["Gaia"].unit = None
+t2["Distance"].unit = u.pc
+t2["BTLIndex"].unit = None
+t2["Target"].unit = None
 t2["url"].unit = None
-t2["ra_obs"].unit = u.deg
-t2["dec_obs"].unit = u.deg
-t2["obs_time"].unit = None
-t2["obs_band"].unit = None
-t2["ra_trans"].unit = u.deg
-t2["dec_trans"].unit = u.deg
-t2["sep_trans"].unit = u.deg
-t2["maxdrift_trans"].unit = u.Hz / u.s
-t2["ra_rec"].unit = u.deg
-t2["dec_rec"].unit = u.deg
-t2["sep_rec"].unit = u.deg
-t2["maxdrift_rec"].unit = u.Hz / u.s
-t2["probe_dist"].unit = u.AU
+t2["RAObs"].unit = u.deg
+t2["DEObs"].unit = u.deg
+t2["ObsTime"].unit = None
+t2["ObsBand"].unit = None
+t2["RATrans"].unit = u.deg
+t2["DETrans"].unit = u.deg
+t2["SepTrans"].unit = u.deg
+t2["MaxDriftTr"].unit = u.Hz / u.s
+t2["RARec"].unit = u.deg
+t2["DERec"].unit = u.deg
+t2["SepRec"].unit = u.deg
+t2["MaxDriftRec"].unit = u.Hz / u.s
+t2["ProbeDist"].unit = u.AU
 
 # add to tablemaker
 tablemaker = cdspyreadme.CDSTablesMaker()
 
 # set the readme
 tablemaker.title = "Fortuitous Observations of Potential Stellar Relay Probe Positions with GBT"
-tablemaker.author = 'M.L. Palumbo'
-tablemaker.authors = 'J.T. Wright, M.H. Huston'
+tablemaker.author = 'Palumbo M.:'
+tablemaker.authors = 'Wright J.T., Huston M.H.'
 tablemaker.date = "2023"
+tablemaker.table = "Table of GBT observaations that fall near the antipodes of stars within 100 pc"
 
 # add the data
-table = tablemaker.addTable(t2, name="tab1.txt")
+table = tablemaker.addTable(t2, name="datafile1.txt")
 
 # set column descriptions
-column = table.get_column("gaia_source_id")
+column = table.get_column("Gaia")
 column.description="Source ID from Gaia DR3 Catalog"
 
-column = table.get_column("gaia_dist")
+column = table.get_column("Distance")
 column.description="Gaia gspphot distance"
 
-column = table.get_column("btl_index")
+column = table.get_column("BTLIndex")
 column.description="Databse index of Breakthrough Listen observation"
 
-column = table.get_column("target")
+column = table.get_column("Target")
 column.description="Target of Breakthrough Listen observation"
 
 column = table.get_column("url")
 column.description="URL for Breakthrough Listen data download"
 
-column = table.get_column("ra_obs")
+column = table.get_column("RAObs")
 column.description="RA in ICRS of the Breakthrough Listen observation"
 
-column = table.get_column("dec_obs")
+column = table.get_column("DEObs")
 column.description="Dec in ICRS of the Breakthrough Listen observation"
 
-column = table.get_column("obs_time")
+column = table.get_column("ObsTime")
 column.description="ISO 8601 compliant date format of Breakthrough Listen observation; timezone is UTC"
 
-column = table.get_column("obs_band")
+column = table.get_column("ObsBand")
 column.description="Band of the GBT observation"
 
-column = table.get_column("ra_trans")
+column = table.get_column("RATrans")
 column.description="List of RAs along transmitting probe focal line in ICRS"
 
-column = table.get_column("dec_trans")
+column = table.get_column("DETrans")
 column.description="List of Decs along transmitting probe focal line in ICRS"
 
-column = table.get_column("sep_trans")
+column = table.get_column("SepTrans")
 column.description="List of angular separations of transmitting probes from observation pointing"
 
-column = table.get_column("maxdrift_trans")
+column = table.get_column("MaxDriftTr")
 column.description="List of drift rates of transmitting probes"
 
-column = table.get_column("ra_rec")
+column = table.get_column("RARec")
 column.description="List of RAs along receiving probe focal line in ICRS"
 
-column = table.get_column("dec_rec")
+column = table.get_column("DERec")
 column.description="List of Decs along receiving probe focal line in ICRS"
 
-column = table.get_column("sep_rec")
+column = table.get_column("SepRec")
 column.description="List of angular separations of receiving probes from observation pointing"
 
-column = table.get_column("maxdrift_rec")
+column = table.get_column("MaxDriftRec")
 column.description="List of drift rates of receiving probes"
 
-column = table.get_column("probe_dist")
+column = table.get_column("ProbeDist")
 column.description="List of probe distances that coordinates and drift rates were calculated for"
 
 # write it out
