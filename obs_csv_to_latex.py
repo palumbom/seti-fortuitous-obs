@@ -104,18 +104,18 @@ t2["Distance"] = t1["gaia_dist"].astype('f8')
 t2["BTLIndex"] = t1["btl_index"].astype('i8')
 t2["Target"] = t1["target"]
 t2["url"] = t1["url"]
-t2["RAObs"] = t1["ra_obs"].astype('f8')
-t2["DEObs"] = t1["dec_obs"].astype('f8')
+t2["RAObs"] = np.round(t1["ra_obs"].astype('f8'), decimals=6)
+t2["DEObs"] = np.round(t1["dec_obs"].astype('f8'), decimals=6)
 t2["ObsTime"] = t1["obs_time"]
 t2["ObsBand"] = t1["obs_band"]
-t2["RATrans"] = t1["ra_trans"].astype('f8')
-t2["DETrans"] = t1["dec_trans"].astype('f8')
-t2["SepTrans"] = t1["sep_trans"].astype('f8')
-t2["MaxDriftTr"] = t1["maxdrift_trans"].astype('f8')
-t2["RARec"] = t1["ra_rec"].astype('f8')
-t2["DERec"] = t1["dec_rec"].astype('f8')
-t2["SepRec"] = t1["sep_rec"].astype('f8')
-t2["MaxDriftRec"] = t1["maxdrift_rec"].astype('f8')
+t2["RATrans"] = np.round(t1["ra_trans"].astype('f8'), decimals=6)
+t2["DETrans"] = np.round(t1["dec_trans"].astype('f8'), decimals=6)
+t2["SepTrans"] = np.round(t1["sep_trans"].astype('f8'), decimals=6)
+t2["MaxDriftTr"] = np.round(t1["maxdrift_trans"].astype('f8'), decimals=6)
+t2["RARec"] = np.round(t1["ra_rec"].astype('f8'), decimals=6)
+t2["DERec"] = np.round(t1["dec_rec"].astype('f8'), decimals=6)
+t2["SepRec"] = np.round(t1["sep_rec"].astype('f8'), decimals=6)
+t2["MaxDriftRec"] = np.round(t1["maxdrift_rec"].astype('f8'), decimals=6)
 t2["ProbeDist"] = np.tile(dists.value, int(len(t2)/len(dists)))
 
 # set units
@@ -143,10 +143,10 @@ tablemaker = cdspyreadme.CDSTablesMaker()
 
 # set the readme
 tablemaker.title = "Fortuitous Observations of Potential Stellar Relay Probe Positions with GBT"
-tablemaker.author = 'Palumbo M.:'
-tablemaker.authors = 'Wright J.T., Huston M.H.'
+tablemaker.author = 'Palumbo M.L.'
+tablemaker.authors = 'Wright J.T., Huston M.J.'
 tablemaker.date = "2023"
-tablemaker.table = "Table of GBT observaations that fall near the antipodes of stars within 100 pc"
+tablemaker.table = "Table of GBT observations that fall near the antipodes of stars within 100 pc"
 
 # add the data
 table = tablemaker.addTable(t2, name="datafile1.txt")
@@ -159,7 +159,7 @@ column = table.get_column("Distance")
 column.description="Gaia gspphot distance"
 
 column = table.get_column("BTLIndex")
-column.description="Databse index of Breakthrough Listen observation"
+column.description="Database index of Breakthrough Listen observation"
 
 column = table.get_column("Target")
 column.description="Target of Breakthrough Listen observation"

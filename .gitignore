@@ -3,6 +3,7 @@
 *.tex
 *.txt
 *.mrt
+*.zip
 *.ecsv
 *.ipynb_checkpoints
 *.DS_Store
